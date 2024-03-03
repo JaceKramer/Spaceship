@@ -1,6 +1,6 @@
 public class Rocket implements MoveableObject {
     private int x, y;
-    private static final int SPEED = 5;
+    private static final int SPEED = 10;
 
     public Rocket() {
         x = 50;

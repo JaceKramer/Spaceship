@@ -50,7 +50,7 @@ public class GamePanel extends JPanel {
                 asteroid.move();
             }
             for (Point laser : lasers) {
-                laser.x += 5;  // Move laser to the right
+                laser.x += 15;  // Move laser to the right
             }
             checkCollisions();
             repaint();
