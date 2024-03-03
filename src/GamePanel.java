@@ -9,11 +9,15 @@ public class GamePanel extends JPanel {
     private ArrayList<Asteroid> asteroids;
     private ArrayList<Point> lasers;
     private Timer timer;
+    private int score;
+    private boolean gameOver;
 
     public GamePanel() {
         rocket = new Rocket();
         asteroids = new ArrayList<>();
         lasers = new ArrayList<>();
+        score = 0;
+        gameOver = false;
 
         // Add keyboard listener
         addKeyListener(new KeyAdapter() {
@@ -45,15 +49,18 @@ public class GamePanel extends JPanel {
 
         // Set up the timer with a lambda function
         timer = new Timer(20, (ActionEvent e) -> {
-            rocket.move();
-            for (Asteroid asteroid : asteroids) {
-                asteroid.move();
+            if (!gameOver) {
+                rocket.move();
+                for (Asteroid asteroid : asteroids) {
+                    asteroid.move();
+                }
+                for (Point laser : lasers) {
+                    laser.x += 15;  // Move laser to the right
+                }
+                spawnAsteroids();
+                checkCollisions();
+                repaint();
             }
-            for (Point laser : lasers) {
-                laser.x += 15;  // Move laser to the right
-            }
-            checkCollisions();
-            repaint();
         });
         timer.start();
 
@@ -69,6 +76,19 @@ public class GamePanel extends JPanel {
         }
     }
 
+    private void spawnAsteroids(){
+        Random rand = new Random();
+        if (rand.nextDouble() < 0.02) {
+            AsteroidSize size = AsteroidSize.values()[rand.nextInt(AsteroidSize.values().length)];
+            asteroids.add(new Asteroid(size));
+        }
+
+        if (rand.nextDouble() < 0.01) {
+            AsteroidSize size = AsteroidSize.values()[rand.nextInt(AsteroidSize.values().length)];
+            asteroids.add(new Asteroid(size));
+        }
+    }
+
     private void checkCollisions() {
         // Check for collisions between lasers and asteroids
         for (int i = 0; i < lasers.size(); i++) {
@@ -76,59 +96,75 @@ public class GamePanel extends JPanel {
             for (int j = 0; j < asteroids.size(); j++) {
                 Asteroid asteroid = asteroids.get(j);
                 if (laser.x >= asteroid.getX() && laser.x <= asteroid.getX() + 50 &&
-                        laser.y >= asteroid.getY() && laser.y <= asteroid.getY() + 50) {
+                        laser.y >= asteroid.getY() && laser.y <= asteroid.getY() + 75) {
                     lasers.remove(i);
                     asteroids.remove(j);
+                    score++;
                     i--;
                     break;
                 }
             }
         }
+
+        for (Asteroid asteroid : asteroids) {
+            if (rocket.getX() < asteroid.getX() + 150 &&
+                    rocket.getX() + 100 > asteroid.getX() &&
+                    rocket.getY() < asteroid.getY() + 75 &&
+                    rocket.getY() + 100 > asteroid.getY()) {
+                rocket.setVisible(false);
+                gameOver = true;
+                timer.stop();  // Stop the game when the rocket is hit
+            }
+        }
     }
+
+    //private void
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         // Draw rocket
-        String rockot = "khaledski.png";
+        String rockot = "spaceship.png";
         ImageIcon rockIt = new ImageIcon(rockot);
         Image rockItImage = rockIt.getImage();
         Image rock = rockItImage.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         ImageIcon rocky = new ImageIcon(rock);
 
-        String yu = "shark.PNG";
-        ImageIcon kari = new ImageIcon(yu);
-        Image yukar = kari.getImage();
-        Image bae = yukar.getScaledInstance(100, 50, Image.SCALE_SMOOTH);
-        ImageIcon yukari = new ImageIcon(bae);
+        String sml = "meteor.PNG";
+        ImageIcon smal = new ImageIcon(sml);
+        Image smll = smal.getImage();
+        Image small = smll.getScaledInstance(100, 50, Image.SCALE_SMOOTH);
+        ImageIcon smallshark = new ImageIcon(small);
 
-        String yip = "shark.PNG";
-        ImageIcon ee = new ImageIcon(yip);
-        Image yuee = ee.getImage();
-        Image yipee = yuee.getScaledInstance(150, 75, Image.SCALE_SMOOTH);
-        ImageIcon yukayipe = new ImageIcon(yipee);
+        String mid = "meteor.PNG";
+        ImageIcon medi = new ImageIcon(mid);
+        Image medum = medi.getImage();
+        Image medium = medum.getScaledInstance(150, 75, Image.SCALE_SMOOTH);
+        ImageIcon mediumshark = new ImageIcon(medium);
 
-        String win = "shark.PNG";
-        ImageIcon ter = new ImageIcon(win);
-        Image snow = ter.getImage();
-        Image wnter = snow.getScaledInstance(200, 100, Image.SCALE_SMOOTH);
-        ImageIcon winter = new ImageIcon(wnter);
+        String lrg = "meteor.PNG";
+        ImageIcon larg = new ImageIcon(lrg);
+        Image lrge = larg.getImage();
+        Image large = lrge.getScaledInstance(200, 100, Image.SCALE_SMOOTH);
+        ImageIcon largeshark = new ImageIcon(large);
 
+        if (rocket.isVisible()) {
+            g.drawImage(rocky.getImage(), rocket.getX(), rocket.getY(), null);
+        }
 
-        g.drawImage(rocky.getImage(), rocket.getX(), rocket.getY(), null);
 
         // Draw asteroids
         for (Asteroid asteroid : asteroids) {
             Image imagePath;
             switch (asteroid.getSize()) {
                 case SMALL:
-                    imagePath = yukari.getImage();
+                    imagePath = smallshark.getImage();
                     break;
                 case MEDIUM:
-                    imagePath = yukayipe.getImage();
+                    imagePath = mediumshark.getImage();
                     break;
                 case LARGE:
                 default:
-                    imagePath = winter.getImage();
+                    imagePath = largeshark.getImage();
                     break;
             }
             g.drawImage(imagePath, asteroid.getX(), asteroid.getY(), null);
@@ -139,5 +175,13 @@ public class GamePanel extends JPanel {
             g.setColor(Color.RED);
             g.fillRect(laser.x, laser.y, 10, 5);
         }
+
+        if (gameOver) {
+            g.setColor(Color.BLACK);
+            g.setFont(new Font("Arial", Font.BOLD, 20));
+            g.drawString("Game Over", getWidth() / 2 - 60, getHeight() / 2 - 20);
+            g.drawString("   Final Score: " + score, getWidth() / 2 - 90, getHeight() / 2 + 20);
+        }
     }
 }
+
