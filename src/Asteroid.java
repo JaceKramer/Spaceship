@@ -29,6 +29,7 @@ public class Asteroid implements MoveableObject {
     }
 
 
+    // Move asteroids at different speeds depending on size
     public void move() {
         if(size == AsteroidSize.SMALL)
         {
@@ -38,7 +39,7 @@ public class Asteroid implements MoveableObject {
             x -= 7;
         }
         else if (size == AsteroidSize.LARGE) {
-            x -= 3;  // Move towards the left
+            x -= 3;
         }
     }
 

@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -10,6 +11,7 @@ public class GamePanel extends JPanel {
     private ArrayList<Point> lasers;
     private Timer timer;
     private int score;
+    private int highScore;
     private boolean gameOver;
 
     public GamePanel() {
@@ -17,24 +19,35 @@ public class GamePanel extends JPanel {
         asteroids = new ArrayList<>();
         lasers = new ArrayList<>();
         score = 0;
+        highScore = readHighScore();
         gameOver = false;
 
-        // Add keyboard listener
+        // Add keyboard listener for moving the rocket based on what key is pressed
         addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e) {
-                int key = e.getKeyCode();
-                if (key == KeyEvent.VK_LEFT) {
-                    rocket.moveLeft();
-                } else if (key == KeyEvent.VK_RIGHT) {
-                    rocket.moveRight();
-                } else if (key == KeyEvent.VK_UP) {
-                    rocket.moveUp();
-                } else if (key == KeyEvent.VK_DOWN) {
-                    rocket.moveDown();
-                } else if (key == KeyEvent.VK_SPACE) {
-                    lasers.add(new Point(rocket.getX() + 50, rocket.getY() + 25));
+                if (!gameOver) {
+                    int key = e.getKeyCode();
+                    if (key == KeyEvent.VK_LEFT) {
+                        rocket.moveLeft();
+                    } else if (key == KeyEvent.VK_RIGHT) {
+                        rocket.moveRight();
+                    } else if (key == KeyEvent.VK_UP) {
+                        rocket.moveUp();
+                    } else if (key == KeyEvent.VK_DOWN) {
+                        rocket.moveDown();
+                    } else if (key == KeyEvent.VK_SPACE) {
+                        lasers.add(new Point(rocket.getX() + 50, rocket.getY() + 25));
+                    } else if (key == KeyEvent.VK_W) {
+                        rocket.moveUp();
+                    } else if (key == KeyEvent.VK_A) {
+                        rocket.moveLeft();
+                    } else if (key == KeyEvent.VK_S) {
+                        rocket.moveDown();
+                    } else if (key == KeyEvent.VK_D) {
+                        rocket.moveRight();
+                    }
+                    repaint();
                 }
-                repaint();
             }
         });
         setFocusable(true);
@@ -42,8 +55,10 @@ public class GamePanel extends JPanel {
         // Add mouse listener for shooting laser
         addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                lasers.add(new Point(rocket.getX() + 50, rocket.getY() + 25));
-                repaint();
+                if (!gameOver){
+                    lasers.add(new Point(rocket.getX() + 50, rocket.getY() + 25));
+                    repaint();
+                }
             }
         });
 
@@ -55,7 +70,7 @@ public class GamePanel extends JPanel {
                     asteroid.move();
                 }
                 for (Point laser : lasers) {
-                    laser.x += 15;  // Move laser to the right
+                    laser.x += 15;
                 }
                 spawnAsteroids();
                 checkCollisions();
@@ -64,10 +79,11 @@ public class GamePanel extends JPanel {
         });
         timer.start();
 
-        // Generate initial asteroids
+        // Generate 5 initial asteroids
         generateAsteroids();
     }
 
+    // Generate 5 initial asteroids
     private void generateAsteroids() {
         Random rand = new Random();
         for (int i = 0; i < 5; i++) {
@@ -76,6 +92,7 @@ public class GamePanel extends JPanel {
         }
     }
 
+    // Generates a continuous flow of asteroids
     private void spawnAsteroids(){
         Random rand = new Random();
         if (rand.nextDouble() < 0.02) {
@@ -106,6 +123,7 @@ public class GamePanel extends JPanel {
             }
         }
 
+        // Checks for collision between the rocket and asteroids
         for (Asteroid asteroid : asteroids) {
             if (rocket.getX() < asteroid.getX() + 150 &&
                     rocket.getX() + 100 > asteroid.getX() &&
@@ -113,12 +131,38 @@ public class GamePanel extends JPanel {
                     rocket.getY() + 100 > asteroid.getY()) {
                 rocket.setVisible(false);
                 gameOver = true;
+                updateHighScore();
                 timer.stop();  // Stop the game when the rocket is hit
             }
         }
     }
 
-    //private void
+    private void updateHighScore() {
+        if (score > highScore) {
+            highScore = score;
+            writeHighScore();
+        }
+    }
+
+    private int readHighScore() {
+        try (BufferedReader reader = new BufferedReader(new FileReader("highscore.txt"))) {
+            String line = reader.readLine();
+            if (line != null) {
+                return Integer.parseInt(line);
+            }
+        } catch (IOException | NumberFormatException e) {
+            e.printStackTrace();
+        }
+        return 0;  // Default to 0 if there's an issue reading the file
+    }
+
+    private void writeHighScore() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("highscore.txt"))) {
+            writer.write(Integer.toString(highScore));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -133,19 +177,19 @@ public class GamePanel extends JPanel {
         ImageIcon smal = new ImageIcon(sml);
         Image smll = smal.getImage();
         Image small = smll.getScaledInstance(100, 50, Image.SCALE_SMOOTH);
-        ImageIcon smallshark = new ImageIcon(small);
+        ImageIcon smallmeteor = new ImageIcon(small);
 
         String mid = "meteor.PNG";
         ImageIcon medi = new ImageIcon(mid);
         Image medum = medi.getImage();
         Image medium = medum.getScaledInstance(150, 75, Image.SCALE_SMOOTH);
-        ImageIcon mediumshark = new ImageIcon(medium);
+        ImageIcon mediummeteor = new ImageIcon(medium);
 
         String lrg = "meteor.PNG";
         ImageIcon larg = new ImageIcon(lrg);
         Image lrge = larg.getImage();
         Image large = lrge.getScaledInstance(200, 100, Image.SCALE_SMOOTH);
-        ImageIcon largeshark = new ImageIcon(large);
+        ImageIcon largemeteor = new ImageIcon(large);
 
         if (rocket.isVisible()) {
             g.drawImage(rocky.getImage(), rocket.getX(), rocket.getY(), null);
@@ -157,14 +201,14 @@ public class GamePanel extends JPanel {
             Image imagePath;
             switch (asteroid.getSize()) {
                 case SMALL:
-                    imagePath = smallshark.getImage();
+                    imagePath = smallmeteor.getImage();
                     break;
                 case MEDIUM:
-                    imagePath = mediumshark.getImage();
+                    imagePath = mediummeteor.getImage();
                     break;
                 case LARGE:
                 default:
-                    imagePath = largeshark.getImage();
+                    imagePath = largemeteor.getImage();
                     break;
             }
             g.drawImage(imagePath, asteroid.getX(), asteroid.getY(), null);
@@ -180,7 +224,8 @@ public class GamePanel extends JPanel {
             g.setColor(Color.BLACK);
             g.setFont(new Font("Arial", Font.BOLD, 20));
             g.drawString("Game Over", getWidth() / 2 - 60, getHeight() / 2 - 20);
-            g.drawString("   Final Score: " + score, getWidth() / 2 - 90, getHeight() / 2 + 20);
+            g.drawString("  Final Score: " + score, getWidth() / 2 - 90, getHeight() / 2 + 20);
+            g.drawString("  High Score: " + highScore, getWidth() / 2 - 90, getHeight() / 2 + 60);
         }
     }
 }
