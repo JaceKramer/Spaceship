@@ -52,15 +52,17 @@ public class GamePanel extends JPanel {
         });
         setFocusable(true);
 
+       this.addMouseListener(new LaserListener());
+
         // Add mouse listener for shooting laser
-        addMouseListener(new MouseAdapter() {
+        /*addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 if (!gameOver){
                     lasers.add(new Point(rocket.getX() + 50, rocket.getY() + 25));
                     repaint();
                 }
             }
-        });
+        });*/
 
         // Set up the timer with a lambda function to run the game
         timer = new Timer(20, (ActionEvent e) -> {
@@ -81,6 +83,16 @@ public class GamePanel extends JPanel {
 
         // Generate 5 initial asteroids
         generateAsteroids();
+    }
+
+    private class LaserListener implements MouseListener {
+        public void mouseClicked(MouseEvent e) {
+            if (!gameOver){
+                lasers.add(new Point(rocket.getX() + 50, rocket.getY() + 25));
+                repaint();
+            }
+        }
+        public void mousePressed(MouseEvent e) {}public void mouseReleased(MouseEvent e) {}public void mouseEntered(MouseEvent e) {}public void mouseExited(MouseEvent e) {}
     }
 
     // Generate 5 initial asteroids
