@@ -62,7 +62,7 @@ public class GamePanel extends JPanel {
             }
         });
 
-        // Set up the timer with a lambda function
+        // Set up the timer with a lambda function to run the game
         timer = new Timer(20, (ActionEvent e) -> {
             if (!gameOver) {
                 rocket.move();
@@ -92,7 +92,7 @@ public class GamePanel extends JPanel {
         }
     }
 
-    // Generates a continuous flow of asteroids
+    // Generates asteroids in groups of 1 or 2
     private void spawnAsteroids(){
         Random rand = new Random();
         if (rand.nextDouble() < 0.02) {
@@ -132,11 +132,12 @@ public class GamePanel extends JPanel {
                 rocket.setVisible(false);
                 gameOver = true;
                 updateHighScore();
-                timer.stop();  // Stop the game when the rocket is hit
+                timer.stop();  // Stops the game when the rocket is hit
             }
         }
     }
 
+    // Updates high score
     private void updateHighScore() {
         if (score > highScore) {
             highScore = score;
@@ -144,6 +145,7 @@ public class GamePanel extends JPanel {
         }
     }
 
+    // Checks current high score
     private int readHighScore() {
         try (BufferedReader reader = new BufferedReader(new FileReader("highscore.txt"))) {
             String line = reader.readLine();
@@ -156,6 +158,7 @@ public class GamePanel extends JPanel {
         return 0;  // Default to 0 if there's an issue reading the file
     }
 
+    // Writes new high score
     private void writeHighScore() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("highscore.txt"))) {
             writer.write(Integer.toString(highScore));
@@ -166,7 +169,8 @@ public class GamePanel extends JPanel {
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        // Draw rocket
+
+        // Resize all images
         String rockot = "spaceship.png";
         ImageIcon rockIt = new ImageIcon(rockot);
         Image rockItImage = rockIt.getImage();
@@ -191,10 +195,10 @@ public class GamePanel extends JPanel {
         Image large = lrge.getScaledInstance(200, 100, Image.SCALE_SMOOTH);
         ImageIcon largemeteor = new ImageIcon(large);
 
+        // Draw rocket
         if (rocket.isVisible()) {
             g.drawImage(rocky.getImage(), rocket.getX(), rocket.getY(), null);
         }
-
 
         // Draw asteroids
         for (Asteroid asteroid : asteroids) {
@@ -220,6 +224,7 @@ public class GamePanel extends JPanel {
             g.fillRect(laser.x, laser.y, 10, 5);
         }
 
+        // Displays text when game is finished
         if (gameOver) {
             g.setColor(Color.BLACK);
             g.setFont(new Font("Arial", Font.BOLD, 20));
