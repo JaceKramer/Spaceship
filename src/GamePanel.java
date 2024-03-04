@@ -4,6 +4,8 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Random;
+import javax.sound.sampled.*;
+import java.io.File;
 
 public class GamePanel extends JPanel {
     private Rocket rocket;
@@ -13,6 +15,12 @@ public class GamePanel extends JPanel {
     private int score;
     private int highScore;
     private boolean gameOver;
+    private String sound;
+    private String endSound;
+    private String highSound;
+    private boolean highSoundYes;
+    private boolean moveLeft = false, moveRight = false, moveUp = false, moveDown = false;
+    private int move;
 
     public GamePanel() {
         rocket = new Rocket();
@@ -21,6 +29,10 @@ public class GamePanel extends JPanel {
         score = 0;
         highScore = readHighScore();
         gameOver = false;
+        highSoundYes = false;
+        sound = "pew.wav";
+        endSound = "gameover.wav";
+        highSound = "highscore.wav";
 
         // Add keyboard listener for moving the rocket based on what key is pressed
         addKeyListener(new KeyAdapter() {
@@ -28,23 +40,48 @@ public class GamePanel extends JPanel {
                 if (!gameOver) {
                     int key = e.getKeyCode();
                     if (key == KeyEvent.VK_LEFT) {
-                        rocket.moveLeft();
+                        move = 1;
                     } else if (key == KeyEvent.VK_RIGHT) {
-                        rocket.moveRight();
+                        move = 2;
                     } else if (key == KeyEvent.VK_UP) {
-                        rocket.moveUp();
+                        move = 3;
                     } else if (key == KeyEvent.VK_DOWN) {
-                        rocket.moveDown();
+                        move = 4;
                     } else if (key == KeyEvent.VK_SPACE) {
                         lasers.add(new Point(rocket.getX() + 50, rocket.getY() + 25));
                     } else if (key == KeyEvent.VK_W) {
-                        rocket.moveUp();
+                        move = 3;
                     } else if (key == KeyEvent.VK_A) {
-                        rocket.moveLeft();
+                        move = 1;
                     } else if (key == KeyEvent.VK_S) {
-                        rocket.moveDown();
+                        move = 4;
                     } else if (key == KeyEvent.VK_D) {
-                        rocket.moveRight();
+                        move = 2;
+                    }
+                    repaint();
+                }
+            }
+            public void keyReleased(KeyEvent e) {
+                if (!gameOver) {
+                    int key = e.getKeyCode();
+                    if (key == KeyEvent.VK_LEFT) {
+                        move = 5;
+                    } else if (key == KeyEvent.VK_RIGHT) {
+                        move = 5;
+                    } else if (key == KeyEvent.VK_UP) {
+                        move = 5;
+                    } else if (key == KeyEvent.VK_DOWN) {
+                        move = 5;
+                    } else if (key == KeyEvent.VK_SPACE) {
+                        lasers.add(new Point(rocket.getX() + 50, rocket.getY() + 25));
+                    } else if (key == KeyEvent.VK_W) {
+                        move = 5;
+                    } else if (key == KeyEvent.VK_A) {
+                        move = 5;
+                    } else if (key == KeyEvent.VK_S) {
+                        move = 5;
+                    } else if (key == KeyEvent.VK_D) {
+                        move = 5;
                     }
                     repaint();
                 }
@@ -67,9 +104,9 @@ public class GamePanel extends JPanel {
         // Set up the timer with a lambda function to run the game
         timer = new Timer(20, (ActionEvent e) -> {
             if (!gameOver) {
-                rocket.move();
+                rocket.move(move);
                 for (Asteroid asteroid : asteroids) {
-                    asteroid.move();
+                    asteroid.move(move);
                 }
                 for (Point laser : lasers) {
                     laser.x += 15;
@@ -90,6 +127,20 @@ public class GamePanel extends JPanel {
             if (!gameOver){
                 lasers.add(new Point(rocket.getX() + 50, rocket.getY() + 25));
                 repaint();
+                try
+                {
+                    File shootPath = new File(sound);
+                    if(shootPath.exists())
+                    {
+                        AudioInputStream shootInput = AudioSystem.getAudioInputStream(shootPath);
+                        Clip velvetClip = AudioSystem.getClip();
+                        long length = velvetClip.getMicrosecondLength();
+                        velvetClip.open(shootInput);
+                        velvetClip.start();
+                    }
+                } catch (Exception ex) {
+                    System.out.println(ex);
+                }
             }
         }
         public void mousePressed(MouseEvent e) {}public void mouseReleased(MouseEvent e) {}public void mouseEntered(MouseEvent e) {}public void mouseExited(MouseEvent e) {}
@@ -153,6 +204,7 @@ public class GamePanel extends JPanel {
     private void updateHighScore() {
         if (score > highScore) {
             highScore = score;
+            highSoundYes = true;
             writeHighScore();
         }
     }
@@ -243,6 +295,40 @@ public class GamePanel extends JPanel {
             g.drawString("Game Over", getWidth() / 2 - 60, getHeight() / 2 - 20);
             g.drawString("  Final Score: " + score, getWidth() / 2 - 90, getHeight() / 2 + 20);
             g.drawString("  High Score: " + highScore, getWidth() / 2 - 90, getHeight() / 2 + 60);
+            if (highSoundYes)
+            {
+                try
+                {
+                    File endPath = new File(endSound);
+                    if(endPath.exists())
+                    {
+                        AudioInputStream endInput = AudioSystem.getAudioInputStream(endPath);
+                        Clip endClip = AudioSystem.getClip();
+                        long length = endClip.getMicrosecondLength();
+                        endClip.open(endInput);
+                        endClip.start();
+                    }
+                } catch (Exception ex) {
+                    System.out.println(ex);
+                }
+            }
+            else {
+                try
+                {
+                    File highPath = new File(highSound);
+                    if(highPath.exists())
+                    {
+                        AudioInputStream endInput = AudioSystem.getAudioInputStream(highPath);
+                        Clip highClip = AudioSystem.getClip();
+                        long length = highClip.getMicrosecondLength();
+                        highClip.open(endInput);
+                        highClip.start();
+                    }
+                } catch (Exception ex) {
+                    System.out.println(ex);
+                }
+            }
+
         }
     }
 }
