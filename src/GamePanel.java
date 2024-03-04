@@ -19,7 +19,7 @@ public class GamePanel extends JPanel {
     private String endSound;
     private String highSound;
     private boolean highSoundYes;
-    private boolean moveLeft = false, moveRight = false, moveUp = false, moveDown = false;
+    //private boolean moveLeft = false, moveRight = false, moveUp = false, moveDown = false;
     private int move;
 
     public GamePanel() {
@@ -90,16 +90,6 @@ public class GamePanel extends JPanel {
         setFocusable(true);
 
        this.addMouseListener(new LaserListener());
-
-        // Add mouse listener for shooting laser
-        /*addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                if (!gameOver){
-                    lasers.add(new Point(rocket.getX() + 50, rocket.getY() + 25));
-                    repaint();
-                }
-            }
-        });*/
 
         // Set up the timer with a lambda function to run the game
         timer = new Timer(20, (ActionEvent e) -> {
